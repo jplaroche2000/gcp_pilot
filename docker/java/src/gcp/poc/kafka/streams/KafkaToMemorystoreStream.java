@@ -21,6 +21,8 @@ import redis.clients.jedis.JedisPoolConfig;
 /**
  * Reads a Kafka stream and does CRUD into GCP Cloud Memorysotre (Redis).
  * 
+ * For a quick introduction to Jedis - https://www.baeldung.com/jedis-java-redis-client-library
+ * 
  * @see https://cloud.google.com/memorystore/docs/redis/connect-redis-instance-gce
  * @author duke2
  */
