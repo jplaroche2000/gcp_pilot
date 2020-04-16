@@ -1,0 +1,63 @@
+version: "3.7"
+services:
+
+  oracle-database:
+    image: jplarochedocker/custom-oracle:latest
+    ports:
+      - target: 1521
+        published: 1521
+        protocol: tcp
+        mode: host
+      - target: 8080
+        published: 8080
+        protocol: tcp
+        mode: host
+    volumes:
+      - type: tmpfs
+        target: /dev/shm
+        tmpfs:
+          size: 1073741824 # this means 1GB
+    networks:
+      - striim_oracle_net
+    environment:
+      ORACLE_PWD: "tiger"
+
+  striim:
+    build:
+      context: .
+      dockerfile: Dockerfile.striim
+    image: custom-striim:latest
+    ports:
+      - target: 9080
+        published: 80
+        protocol: tcp
+        mode: host
+    networks:
+      - striim_oracle_net
+    environment:
+      STRIIM_ACCEPT_EULA: "Y"
+    extra_hosts:
+    - "zoo1:10.255.0.6"
+    - "zoo2:10.255.0.7"
+    - "zoo3:10.255.0.8"
+
+  java-kstream:
+    build:
+      context: .
+      dockerfile: Dockerfile.kstream
+    image: custom-kstream:latest
+    networks:
+      - striim_oracle_net
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: "/u01/oracle/productods-pilot-project-c2762e8f4cd7.json"
+      DS_PROJECT_ID: "productods-pilot-project"
+      KAFKA_BROKER: "zoo1"
+    extra_hosts:
+    - "zoo1:10.255.0.6"
+    - "zoo2:10.255.0.7"
+    - "zoo3:10.255.0.8"
+
+networks:
+  striim_oracle_net:
+    driver: overlay
+

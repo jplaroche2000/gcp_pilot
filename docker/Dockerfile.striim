@@ -1,0 +1,15 @@
+#
+# This image builds a custom Striim image
+# with oracle jdb driver and GCP service account key for Pub Sub access (change to reflect your own key and GCP project)
+# - https://cloud.google.com/iam/docs/creating-managing-service-account-keys
+#
+FROM striim/evalversion
+
+MAINTAINER Jean-Philippe Laroche <jplaroche.2017@gmail.com>
+
+USER root
+
+# Copy JDBC driver - striim uid/gid is 999
+COPY --chown=999:999 striim/ojdbc7-12.1.0.2.jar /opt/striim/lib/ojdbc7-12.1.0.2.jar
+RUN chmod 644 /opt/striim/lib/ojdbc7-12.1.0.2.jar 
+
