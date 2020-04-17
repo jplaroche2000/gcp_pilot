@@ -34,7 +34,7 @@ public class KafkaToMemorystoreStream {
 
 		// Set up the configuration.
 		final Properties props = new Properties();
-		props.put(StreamsConfig.APPLICATION_ID_CONFIG, "stateless-transformations-example");
+		props.put(StreamsConfig.APPLICATION_ID_CONFIG, "kafka-replication-to-memorystore");
 		props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BROKER") + ":9092");
 		props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
 		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
