@@ -1,2 +1,3 @@
 docker/striim/*.json
 docker/java/*.json
+.metadata
