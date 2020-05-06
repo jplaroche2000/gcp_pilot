@@ -9,13 +9,16 @@ import org.apache.kafka.streams.StreamsBuilder;
 import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.Topology;
 import org.apache.kafka.streams.kstream.KStream;
-
 import org.json.JSONArray;
 
 import com.google.cloud.datastore.Batch;
 import com.google.cloud.datastore.Batch.Response;
 import com.google.cloud.datastore.Datastore;
 import com.google.cloud.datastore.DatastoreOptions;
+import com.google.cloud.datastore.Key;
+import com.google.cloud.datastore.Query;
+import com.google.cloud.datastore.QueryResults;
+import com.google.datastore.v1.QueryResultBatch;
 
 import gcp.poc.kafka.streams.model.FirestoreEntity;
 import gcp.poc.kafka.streams.model.StriimRecord;
@@ -28,16 +31,26 @@ import gcp.poc.kafka.streams.model.StriimRecord;
  */
 public class KafkaToFirestoreStream {
 
+	private static String[] kinds = new String[] {	
+			"Customer",
+			"CustomerOrder",
+			"CustomerOrderItem",
+			"Address",
+			"AddressLink"
+	};
+	
+	
 	public static void main(String[] args) {
 
 		// Set up the configuration.
 		final Properties props = new Properties();
+	
 		props.put(StreamsConfig.APPLICATION_ID_CONFIG, "kafka-replication-to-datastore");
 		props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, System.getenv("KAFKA_BROKER") + ":9092");
 		props.put(StreamsConfig.CACHE_MAX_BYTES_BUFFERING_CONFIG, 0);
 		props.put(StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
 		props.put(StreamsConfig.DEFAULT_VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
-
+		
 		// Get the source stream.
 		final StreamsBuilder builder = new StreamsBuilder();
 		final KStream<String, String> source = builder.stream("bucket");
@@ -82,6 +95,22 @@ public class KafkaToFirestoreStream {
 				});
 				
 				Response resp = batch.submit();
+				
+				System.out.println("Bath submitted");
+				
+				
+				for (String kind : kinds) {
+					
+					QueryResults<Key> result = datastore.run(Query.newKeyQueryBuilder().setKind(kind).build());
+					int count = 0;
+				    while (result.hasNext()) {
+				    	Key entityKey = result.next();
+				        count++;
+				    }
+				    System.out.println(kind+" entity count -> "+count);
+				    
+				}
+				
 				
 
 			} catch (Exception e) {
