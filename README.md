@@ -95,8 +95,4 @@ Prerequisites:
     docker-compose down
     ```  
 
-Troobleshooting:
----------------
-
-The Striim pre-built docker image (striim/evalversion) has been missing from time to time.  You will need to download the binary install and configure it if the striim image build fails - https://www.striim.com/docs/en/creating-a-cluster-in-ubuntu.html
 
