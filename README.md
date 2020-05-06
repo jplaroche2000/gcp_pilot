@@ -4,7 +4,7 @@ Quick setup:
 
 Objective:
 
-Replicating Oracle database tables to a GCP Firestore datastore with Striim and Kafka
+Replicating Oracle database tables to a GCP Firestore datastore and GCP with Striim and Kafka/Confluent.  In addition we will use a hybrid cloud topology to bridge a local network to a GCP host project with service projects using VPN (OpenVPN).
 
 --/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--/--
 
