@@ -21,7 +21,7 @@ Prerequisites:
 1. On your Docker machine:
 
     ```sh
-    git clone https://github.com/jplaroche2000/striim.git
+    git clone https://github.com/jplaroche2000/gcp_pilot.git
     ```
 
     ```sh
