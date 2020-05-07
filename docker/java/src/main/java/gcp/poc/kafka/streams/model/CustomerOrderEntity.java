@@ -18,7 +18,8 @@ public class CustomerOrderEntity extends FirestoreEntity {
 	private Integer customerId;	
 	private Double total;
 	
-	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); // your format
+	SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"); // Oracle docker
+	SimpleDateFormat format2 = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS"); // Oracle local
 	private String json;
 
 	public CustomerOrderEntity(JSONObject data) {
@@ -30,9 +31,12 @@ public class CustomerOrderEntity extends FirestoreEntity {
 			try {
 				orderDate = format.parse(stringDate);
 			} catch (ParseException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				orderDate = new Date();
+				try {
+					orderDate = format2.parse(stringDate);
+				} catch (ParseException e2) {
+					e2.printStackTrace();
+					orderDate = new Date();
+				}
 			}
 		}
 		if(data.has("CUSTOMER_ID")) {
