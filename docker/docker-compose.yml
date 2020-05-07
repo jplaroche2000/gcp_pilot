@@ -50,22 +50,6 @@ services:
     - REDIS_HOSTS=10.255.1.3
     ports:
     - "8081:8081"
-    
-  #java-kstream:
-  #  build:
-  #    context: .
-  #    dockerfile: Dockerfile.kstream
-  #  image: custom-kstream:latest
-  #  networks:
-  #    - striim_oracle_net
-  #  environment:
-  #    GOOGLE_APPLICATION_CREDENTIALS: "/u01/oracle/productods-pilot-project-c2762e8f4cd7.json"
-  #    DS_PROJECT_ID: "productods-pilot-project"
-  #    KAFKA_BROKER: "zoo1"
-  #  extra_hosts:
-  #  - "zoo1:10.255.0.6"
-  #  - "zoo2:10.255.0.7"
-  #  - "zoo3:10.255.0.8"
 
 networks:
   striim_oracle_net:
