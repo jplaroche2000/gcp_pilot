@@ -9,11 +9,11 @@ adapterName: 'FileReader',
   blocksize: 64, 
   skipbom: true, 
   includesubdirectories: false, 
-  directory: '/export/trailfiles' ) 
+  directory: '/tmp/trailfiles' ) 
 PARSE USING Global.GGTrailParser  ( 
 SupportColumnCharset: false, 
-  metadata: 'tables.def', 
   Compression: false, 
+  metadata: '/tmp/trailfiles/tables.def', 
   handler: 'com.webaction.proc.GGTrailParser_1_0', 
   parserName: 'GGTrailParser', 
   FilterTransactionBoundaries: true, 
