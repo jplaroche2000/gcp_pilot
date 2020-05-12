@@ -1,0 +1,143 @@
+
+CREATE APPLICATION StriimToKafka;
+
+CREATE OR REPLACE SOURCE GGTrailFileParser USING Global.FileReader  ( 
+adapterName: 'FileReader', 
+  positionbyeof: true, 
+  rolloverstyle: 'Default', 
+  wildcard: 'ca*', 
+  blocksize: 64, 
+  skipbom: true, 
+  includesubdirectories: false, 
+  directory: '/tmp/trailfiles' ) 
+PARSE USING Global.GGTrailParser  ( 
+SupportColumnCharset: false, 
+  Compression: false, 
+  metadata: '/tmp/trailfiles/tables.def', 
+  handler: 'com.webaction.proc.GGTrailParser_1_0', 
+  parserName: 'GGTrailParser', 
+  FilterTransactionBoundaries: true, 
+  Tables: '%;', 
+  TrailByteOrder: 'BigEndian' ) 
+OUTPUT TO PosDataStream  ;
+
+CREATE OR REPLACE TARGET FileWriter USING Global.FileWriter  ( 
+filename: 'out.txt', 
+  DataEncryptionKeyPassphrase: '', 
+  flushpolicy: 'EventCount:10000,Interval:30s', 
+  rolloveronddl: 'true', 
+  encryptionpolicy: '', 
+  rolloverpolicy: 'EventCount:10000,Interval:30s' ) 
+FORMAT USING Global.JSONFormatter  ( jsonMemberDelimiter: '\n', 
+  EventsAsArrayOfJsonObjects: 'true', 
+  jsonobjectdelimiter: '\n' ) 
+INPUT FROM PosDataStream;
+
+CREATE OR REPLACE TARGET KafkaBucket USING Global.KafkaWriter VERSION '2.1.0' ( 
+KafkaConfigValueSeparator: '=', 
+  Topic: 'bucket', 
+  adapterName: 'KafkaWriter', 
+  MessageHeader: '', 
+  KafkaConfigPropertySeparator: ';', 
+  brokerAddress: 'zoo1:9092', 
+  Mode: 'Sync', 
+  KafkaConfig: 'request.timeout.ms=60001;session.timeout.ms=60000' ) 
+FORMAT USING Global.JSONFormatter  ( handler: 'com.webaction.proc.JSONFormatter', 
+  jsonMemberDelimiter: '\n', 
+  EventsAsArrayOfJsonObjects: 'true', 
+  formatterName: 'JSONFormatter', 
+  jsonobjectdelimiter: '\n' ) 
+INPUT FROM PosDataStream;
+
+CREATE OR REPLACE CQ CQ_CUSTOMER_ORDER_ITEM INSERT INTO admin.Kafka_Input_Topic_CustomerOrderItem SELECT * FROM PosDataStream p WHERE META(p, "TableName").toString() == 'SCOTT.CUSTOMER_ORDER_ITEM';
+
+CREATE OR REPLACE CQ CQ_CUSTOMER_ORDER INSERT INTO admin.Kafka_Input_Topic_CustomerOrder SELECT * FROM PosDataStream p WHERE META(p, "TableName").toString() == 'SCOTT.CUSTOMER_ORDER';
+
+CREATE OR REPLACE CQ CQ_ADDRESS INSERT INTO admin.Kafka_Input_Topic_Address SELECT * FROM PosDataStream p WHERE META(p, "TableName").toString() == 'SCOTT.ADDRESS';
+
+CREATE OR REPLACE CQ CQ_CUSTOMER INSERT INTO admin.Kafka_Input_Topic_Customer SELECT * FROM PosDataStream p WHERE META(p, "TableName").toString() == 'SCOTT.CUSTOMER';
+
+CREATE OR REPLACE CQ CQ_ADDRESS_LINK INSERT INTO admin.Kafka_Input_Topic_AddressLink SELECT * FROM PosDataStream p WHERE META(p, "TableName").toString() == 'SCOTT.ADDRESS_LINK';
+
+CREATE OR REPLACE TARGET KafkaCustomerOrderItem USING Global.KafkaWriter VERSION '2.1.0' ( 
+Topic: 'customer_order_item', 
+  KafkaConfigValueSeparator: '=', 
+  adapterName: 'KafkaWriter', 
+  MessageHeader: '', 
+  KafkaConfigPropertySeparator: ';', 
+  brokerAddress: 'zoo1:9092', 
+  Mode: 'Sync', 
+  KafkaConfig: 'request.timeout.ms=60001;session.timeout.ms=60000' ) 
+FORMAT USING Global.JSONFormatter  ( handler: 'com.webaction.proc.JSONFormatter', 
+  jsonMemberDelimiter: '\n', 
+  EventsAsArrayOfJsonObjects: 'true', 
+  formatterName: 'JSONFormatter', 
+  jsonobjectdelimiter: '\n' ) 
+INPUT FROM Kafka_Input_Topic_CustomerOrderItem;
+
+CREATE OR REPLACE TARGET KafkaCustomerOrder USING Global.KafkaWriter VERSION '2.1.0' ( 
+KafkaConfigValueSeparator: '=', 
+  adapterName: 'KafkaWriter', 
+  MessageHeader: '', 
+  KafkaConfigPropertySeparator: ';', 
+  brokerAddress: 'zoo1:9092', 
+  Mode: 'Sync', 
+  KafkaConfig: 'request.timeout.ms=60001;session.timeout.ms=60000', 
+  Topic: 'customer_order' ) 
+FORMAT USING Global.JSONFormatter  ( handler: 'com.webaction.proc.JSONFormatter', 
+  jsonMemberDelimiter: '\n', 
+  EventsAsArrayOfJsonObjects: 'true', 
+  formatterName: 'JSONFormatter', 
+  jsonobjectdelimiter: '\n' ) 
+INPUT FROM Kafka_Input_Topic_CustomerOrder;
+
+CREATE OR REPLACE TARGET KafkaAddress USING Global.KafkaWriter VERSION '2.1.0' ( 
+KafkaConfigValueSeparator: '=', 
+  adapterName: 'KafkaWriter', 
+  MessageHeader: '', 
+  KafkaConfigPropertySeparator: ';', 
+  brokerAddress: 'zoo1:9092', 
+  Mode: 'Sync', 
+  KafkaConfig: 'request.timeout.ms=60001;session.timeout.ms=60000', 
+  Topic: 'address' ) 
+FORMAT USING Global.JSONFormatter  ( handler: 'com.webaction.proc.JSONFormatter', 
+  jsonMemberDelimiter: '\n', 
+  EventsAsArrayOfJsonObjects: 'true', 
+  formatterName: 'JSONFormatter', 
+  jsonobjectdelimiter: '\n' ) 
+INPUT FROM Kafka_Input_Topic_Address;
+
+CREATE OR REPLACE TARGET KafkaCustomer USING Global.KafkaWriter VERSION '2.1.0' ( 
+KafkaConfigValueSeparator: '=', 
+  adapterName: 'KafkaWriter', 
+  MessageHeader: '', 
+  KafkaConfigPropertySeparator: ';', 
+  brokerAddress: 'zoo1:9092', 
+  Mode: 'Sync', 
+  KafkaConfig: 'request.timeout.ms=60001;session.timeout.ms=60000', 
+  Topic: 'customer' ) 
+FORMAT USING Global.JSONFormatter  ( handler: 'com.webaction.proc.JSONFormatter', 
+  jsonMemberDelimiter: '\n', 
+  EventsAsArrayOfJsonObjects: 'true', 
+  formatterName: 'JSONFormatter', 
+  jsonobjectdelimiter: '\n' ) 
+INPUT FROM Kafka_Input_Topic_Customer;
+
+CREATE OR REPLACE TARGET KafkaAddressLink USING Global.KafkaWriter VERSION '2.1.0' ( 
+KafkaConfigValueSeparator: '=', 
+  Topic: 'address_link', 
+  adapterName: 'KafkaWriter', 
+  MessageHeader: '', 
+  KafkaConfigPropertySeparator: ';', 
+  brokerAddress: 'zoo1:9092', 
+  Mode: 'Sync', 
+  KafkaConfig: 'request.timeout.ms=60001;session.timeout.ms=60000' ) 
+FORMAT USING Global.JSONFormatter  ( handler: 'com.webaction.proc.JSONFormatter', 
+  jsonMemberDelimiter: '\n', 
+  EventsAsArrayOfJsonObjects: 'true', 
+  formatterName: 'JSONFormatter', 
+  jsonobjectdelimiter: '\n' ) 
+INPUT FROM Kafka_Input_Topic_AddressLink;
+
+END APPLICATION StriimToKafka;
+
