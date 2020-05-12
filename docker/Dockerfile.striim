@@ -9,6 +9,8 @@ MAINTAINER Jean-Philippe Laroche <jplaroche.2017@gmail.com>
 
 USER root
 
+RUN groupadd -g 1000 oracle && useradd -M -g 1000 -u 1000 -s /bin/bash oracle 
+
 # Copy JDBC driver - striim uid/gid is 999
 COPY --chown=999:999 striim/ojdbc7-12.1.0.2.jar /opt/striim/lib/ojdbc7-12.1.0.2.jar
 RUN chmod 644 /opt/striim/lib/ojdbc7-12.1.0.2.jar 
