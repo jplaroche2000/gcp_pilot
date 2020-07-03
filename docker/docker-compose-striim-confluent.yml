@@ -1,0 +1,28 @@
+version: "3.7"
+services:
+
+  striim:
+    build:
+      context: .
+      dockerfile: Dockerfile.striim
+    image: custom-striim:latest
+    ports:
+      - target: 9080
+        published: 9080
+        protocol: tcp
+        mode: host
+    networks:
+      - striim_oracle_net
+    volumes:
+      - /export/trailfiles:/tmp/trailfiles
+    environment:
+      STRIIM_ACCEPT_EULA: "Y"
+    extra_hosts:
+    - "zoo1:10.255.0.6"
+    - "zoo2:10.255.0.7"
+    - "zoo3:10.255.0.8"
+
+networks:
+  striim_oracle_net:
+    driver: overlay
+
