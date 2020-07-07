@@ -53,3 +53,8 @@ INPUT FROM PosDataStream;
 
 END APPLICATION StriimToKafka;
 
+DEPLOY APPLICATION StriimToKafka in default;
+
+START APPLICATION StriimToKafka;
+
+QUIT;
