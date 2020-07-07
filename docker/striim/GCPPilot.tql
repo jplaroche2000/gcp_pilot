@@ -13,7 +13,7 @@ adapterName: 'FileReader',
 PARSE USING Global.GGTrailParser  ( 
 SupportColumnCharset: false, 
   Compression: false, 
-  metadata: '/tmp/trailfiles/tables.def', 
+  metadata: '/tmp/table_def.sql', 
   handler: 'com.webaction.proc.GGTrailParser_1_0', 
   parserName: 'GGTrailParser', 
   FilterTransactionBoundaries: true, 
