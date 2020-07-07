@@ -1,0 +1,80 @@
+#!/bin/bash
+
+STRIIM_RPM_TAG=$1
+
+SERVER_SCRIPT="/opt/striim/bin/server.sh"
+
+if [ ! -f "${SERVER_SCRIPT}" ]; then
+    echo "Striim not installed, installing Striim..."
+	# Install striim-dbms
+	dpkg -i /tmp/"striim-dbms-${STRIIM_RPM_TAG}-Linux.deb" && rm -rf /tmp/"striim-dbms-${STRIIM_RPM_TAG}-Linux.deb"
+
+	# Install striim-node
+	dpkg -i /tmp/"striim-node-${STRIIM_RPM_TAG}-Linux.deb" && rm -rf /tmp/"striim-node-${STRIIM_RPM_TAG}-Linux.deb"
+
+	mv /tmp/sks.jks	/opt/striim/conf/sks.jks
+	mv /tmp/sksKey.pwd /opt/striim/conf/sksKey.pwd
+
+    # Make sure the owner and group for all files are striim	
+	chown -R striim:striim /opt/striim
+
+	
+	DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+	STRIIM_CONF_FILE="/opt/striim/conf/startUp.properties"
+
+	if [ -z "$STRIIM_ACCEPT_EULA" -o "$STRIIM_ACCEPT_EULA" != "Y" ]; then
+		echo "The Striim End-User License Agreement (EULA) must be accepted "
+		echo "before Striim can start. The EULA can be downloaded from the link"
+		echo "http://www.striim.com/evaluation-agreement/"
+		echo ""
+		echo "The EULA can be accepted by setting STRIIM_ACCEPT_EULA env variable to Y"
+		echo "Please see dockerhub overview page for instructions"
+		echo "https://hub.docker.com/r/striim/evalversion/"
+		exit
+	fi
+
+    echo "Configuring Striim..."
+	CONTAINER_IP_ADDRESS=`hostname -i`
+cat << EOF >> $STRIIM_CONF_FILE
+WAClusterName=dockerizedstriim
+CompanyName=Striim
+MetadataDb=derby
+MetaDataRepositoryUname=waction
+MetaDataRepositoryDBname=wactionrepos
+Interfaces=$CONTAINER_IP_ADDRESS
+MetaDataRepositoryLocation=$CONTAINER_IP_ADDRESS
+EOF
+
+    echo "Configuration of Striim completed."
+	echo "Launching Striim."
+else
+    echo "Found existing install, starting Striim."
+fi
+
+
+# Start server as striim user
+echo -e "\n\n\n" | su striim -c /opt/striim/bin/server.sh &> /opt/striim/logs/striim-node.log &
+
+EXPECTED_WRITE_INTERVAL_SECONDS=10
+FILE=/opt/striim/logs/striim-node.log
+
+while : ; do
+        echo "Waiting for server to start."
+        omod=$(stat -c %Y $FILE)
+        #echo "OLD: $omod"
+        sleep $EXPECTED_WRITE_INTERVAL_SECONDS
+        nmod=$(stat -c %Y $FILE)
+        #echo "NEW: $nmod"
+        if [ $omod == $nmod ] ; then
+            break
+        fi
+done
+
+sleep 20
+
+echo "Installing application StriimToKafka..."
+
+/opt/striim/bin/console.sh -c dockerizedstriim -u admin -p admin -f GCPPilot.tql
+
+tail -f /opt/striim/logs/striim-node.log
