@@ -1,0 +1,55 @@
+
+CREATE APPLICATION StriimToKafka;
+
+CREATE OR REPLACE SOURCE GGTrailFileParser USING Global.FileReader  ( 
+adapterName: 'FileReader', 
+  positionbyeof: true, 
+  rolloverstyle: 'Default', 
+  wildcard: 'ca*', 
+  blocksize: 64, 
+  skipbom: true, 
+  includesubdirectories: false, 
+  directory: '/tmp/trailfiles' ) 
+PARSE USING Global.GGTrailParser  ( 
+SupportColumnCharset: false, 
+  Compression: false, 
+  metadata: '/tmp/trailfiles/tables.def', 
+  handler: 'com.webaction.proc.GGTrailParser_1_0', 
+  parserName: 'GGTrailParser', 
+  FilterTransactionBoundaries: true, 
+  Tables: '%;', 
+  TrailByteOrder: 'BigEndian' ) 
+OUTPUT TO PosDataStream  ;
+
+CREATE OR REPLACE TARGET FileWriter USING Global.FileWriter  ( 
+filename: '/tmp/trailfiles/out.txt', 
+  flushpolicy: 'EventCount:10000,Interval:30s', 
+  rolloveronddl: 'true', 
+  encryptionpolicy: '', 
+  adapterName: 'FileWriter', 
+  rolloverpolicy: 'EventCount:10000,Interval:30s' ) 
+FORMAT USING Global.JSONFormatter  ( handler: 'com.webaction.proc.JSONFormatter', 
+  jsonMemberDelimiter: '\n', 
+  EventsAsArrayOfJsonObjects: 'true', 
+  formatterName: 'JSONFormatter', 
+  jsonobjectdelimiter: '\n' ) 
+INPUT FROM PosDataStream;
+
+CREATE OR REPLACE TARGET KafkaBucket USING Global.KafkaWriter VERSION '2.1.0' ( 
+KafkaConfigValueSeparator: '=', 
+  Topic: 'bucket', 
+  adapterName: 'KafkaWriter', 
+  MessageHeader: '', 
+  KafkaConfigPropertySeparator: ';', 
+  brokerAddress: 'broker:29092', 
+  Mode: 'Sync', 
+  KafkaConfig: 'request.timeout.ms=60001;session.timeout.ms=60000' ) 
+FORMAT USING Global.JSONFormatter  ( handler: 'com.webaction.proc.JSONFormatter', 
+  jsonMemberDelimiter: '\n', 
+  EventsAsArrayOfJsonObjects: 'true', 
+  formatterName: 'JSONFormatter', 
+  jsonobjectdelimiter: '\n' ) 
+INPUT FROM PosDataStream;
+
+END APPLICATION StriimToKafka;
+

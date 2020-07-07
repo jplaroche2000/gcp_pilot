@@ -22,9 +22,10 @@ public class SimpleConsumer {
        // Set up the configuration.
        String topics[] = null;
 		
-       String bootstrapServers = "zoo1";
+       String bootstrapServers = "127.0.0.1";
        String groupId = System.currentTimeMillis() +"";
-       topics = new String[] {"bucket", "address", "address_link", "customer", "customer_order", "customer_order_item"};
+       topics = new String[] {"bucket"};
+       //topics = new String[] {"bucket", "address", "address_link", "customer", "customer_order", "customer_order_item"};
        //topics = new String[] {"customer-entity-tx", "other-entity-tx"};
        //topics = new String[] {"insert-tx", "update-tx", "delete-tx", "other-tx"};
 	   

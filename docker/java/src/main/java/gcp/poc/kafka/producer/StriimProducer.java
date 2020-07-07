@@ -40,7 +40,7 @@ public class StriimProducer {
     public static Producer<String, String> createProducer() {
         Properties props = new Properties();
 		props.put(StreamsConfig.APPLICATION_ID_CONFIG, "stateless-transformations-example-client");
-		props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "zoo1:9092");        
+		props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, "127.0.0.1:9092");        
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         //props.put(ProducerConfig.PARTITIONER_CLASS_CONFIG, CustomPartitioner.class.getName());
