@@ -15,3 +15,9 @@ RUN groupadd -g 1000 oracle && useradd -M -g 1000 -u 1000 -s /bin/bash oracle
 COPY --chown=999:999 striim/ojdbc7-12.1.0.2.jar /opt/striim/lib/ojdbc7-12.1.0.2.jar
 RUN chmod 644 /opt/striim/lib/ojdbc7-12.1.0.2.jar 
 
+# Copy Application
+COPY --chown=999:999 striim/GCPPilot.tql /opt/striim/GCPPilot.tql
+RUN chmod 644 /opt/striim/GCPPilot.tql
+
+COPY --chown=999:999 striim/striim-server /tmp
+RUN chmod 776 /tmp/striim-server
