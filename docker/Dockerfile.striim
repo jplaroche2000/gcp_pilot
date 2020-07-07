@@ -21,3 +21,7 @@ RUN chmod 644 /opt/striim/GCPPilot.tql
 
 COPY --chown=999:999 striim/striim-server /tmp
 RUN chmod 776 /tmp/striim-server
+
+COPY --chown=999:999 striim/table_def.sql /tmp
+RUN chmod 644 /tmp/table_def.sql
+
